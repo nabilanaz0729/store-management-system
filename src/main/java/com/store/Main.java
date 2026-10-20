@@ -9,7 +9,7 @@ public class Main {
         System.out.printf("Hello and welcome!");
 
     }
-}*/
+}
 
 package com.store;
 
@@ -35,3 +35,53 @@ public class Main {
         }
     }
 }
+
+
+
+--------------------------*/
+
+package com.store;
+
+import java.util.List;
+
+public class Main {
+    public static void main(String[] args) {
+
+        // ----- Product validation test -----
+        try {
+            new Product("Pen", "Stationery", -5, 10);
+        } catch (IllegalArgumentException e) {
+            System.out.println("Error: " + e.getMessage());
+        }
+
+        // ----- Inventory test -----
+        StoreInventory inventory = new StoreInventory();
+
+        // Empty inventory
+        inventory.listInventory();
+
+        // Product add
+        inventory.addProduct(new Product("Laptop", "Electronics", 999.99, 5));
+        inventory.addProduct(new Product("Mouse", "Electronics", 25.50, 40));
+        inventory.addProduct(new Product("Notebook", "Stationery", 3.75, 100));
+        inventory.listInventory();
+
+        // Category search
+        System.out.println("\nElectronics products:");
+        List<Product> electronics = inventory.searchByCategory("electronics");
+        for (Product p : electronics) {
+            System.out.println(" - " + p);
+        }
+
+        // Remove (boro-chhoto hater ghoti nai)
+        boolean removed = inventory.removeProduct("MOUSE");
+        System.out.println("\nMouse removed? " + removed);
+
+        // Je product nai seta remove kora
+        boolean removedAgain = inventory.removeProduct("Keyboard");
+        System.out.println("Keyboard removed? " + removedAgain);
+
+        inventory.listInventory();
+    }
+}
+
