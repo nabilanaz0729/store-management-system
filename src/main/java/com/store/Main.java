@@ -71,7 +71,7 @@ public class Main {
 
         inventory.listInventory();
     }
-}*/
+}
 package com.store;
 
 public class Main {
@@ -119,6 +119,58 @@ public class Main {
             OrderSummary summary = inventory.createOrder(name, quantity);
             System.out.println(summary);
         } catch (IllegalArgumentException e) {
+            System.out.println("Error: " + e.getMessage());
+        }
+    }
+*/
+
+
+package com.store;
+
+import java.io.IOException;
+
+public class Main {
+
+    public static void main(String[] args) {
+
+        // Inventory banai
+        StoreInventory inventory = new StoreInventory();
+        inventory.addProduct(new Product("Laptop", "Electronics", 999.99, 5));
+        inventory.addProduct(new Product("Mouse", "Electronics", 25.50, 40));
+        inventory.addProduct(new Product("Notebook", "Stationery", 3.75, 100));
+
+        // Ekta order dei, jate stock bodlay
+        inventory.createOrder("Mouse", 10);
+
+        System.out.println("--- Before saving ---");
+        inventory.listInventory();
+
+        String filePath = "inventory.json";
+
+        try {
+            // SAVE
+            InventoryStorage.saveInventoryToFile(inventory, filePath);
+            System.out.println("Saved to " + filePath);
+
+            // LOAD
+            StoreInventory loaded = InventoryStorage.loadInventoryFromFile(filePath);
+            System.out.println("\n--- After loading ---");
+            loaded.listInventory();
+
+            // Proof: loaded ta alada object
+            System.out.println("\nSame inventory object? " + (inventory == loaded));
+
+            // Loaded copy te order dei, original e effect porbe na
+            System.out.println("Order on loaded copy: " + loaded.createOrder("Laptop", 1));
+            System.out.println("Laptop stock in original: "
+                    + inventory.findProduct("Laptop").getStockQuantity());
+            System.out.println("Laptop stock in loaded: "
+                    + loaded.findProduct("Laptop").getStockQuantity());
+
+            // Loaded product e validation ekhono kaj kore kina
+            loaded.findProduct("Laptop").setStockQuantity(-1);
+
+        } catch (IOException | IllegalArgumentException e) {
             System.out.println("Error: " + e.getMessage());
         }
     }
