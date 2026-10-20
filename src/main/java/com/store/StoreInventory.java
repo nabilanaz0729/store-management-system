@@ -5,10 +5,10 @@ import java.util.List;
 
 public class StoreInventory {
 
-    // Shob product ekhane thakbe (private, baire theke dhora jabe na)
+    // all product is here
     private final List<Product> products = new ArrayList<>();
 
-    // 1. Product add kora
+    // 1. Product add
     public void addProduct(Product product) {
         if (product == null) {
             throw new IllegalArgumentException("Product cannot be null");
@@ -16,8 +16,7 @@ public class StoreInventory {
         products.add(product);
     }
 
-    // 2. Nam diye product khuje ber kora (case-insensitive)
-    //    Pele Product return kore, na pele null
+    // 2. Find product by name (case-insensitive)
     public Product findProduct(String productName) {
         for (Product p : products) {
             if (p.getName().equalsIgnoreCase(productName)) {
@@ -27,8 +26,7 @@ public class StoreInventory {
         return null;
     }
 
-    // 3. Nam diye product remove kora
-    //    Remove hole true, na pele false
+    // 3. remove product by name
     public boolean removeProduct(String productName) {
         Product found = findProduct(productName);
         if (found == null) {
@@ -38,7 +36,7 @@ public class StoreInventory {
         return true;
     }
 
-    // 4. Category diye search kora
+    // 4. Search byCategory
     public List<Product> searchByCategory(String category) {
         List<Product> result = new ArrayList<>();
         for (Product p : products) {
@@ -49,7 +47,7 @@ public class StoreInventory {
         return result;
     }
 
-    // 5. Shob product dekhano
+    // 5. shows all product
     public void listInventory() {
         System.out.println("===== STORE INVENTORY =====");
         if (products.isEmpty()) {
@@ -64,7 +62,7 @@ public class StoreInventory {
         System.out.println("===========================");
     }
 
-    // 6. Shob product er copy dey (file e save korar somoy lagbe)
+    // 6. Copy of all product
     public List<Product> getProducts() {
         return new ArrayList<>(products);
     }
@@ -78,33 +76,33 @@ public class StoreInventory {
             throw new IllegalArgumentException("Quantity must be greater than 0");
         }
 
-        // Step 2: product ache kina
+        // Step 2: product availability
         Product product = findProduct(productName);
         if (product == null) {
             throw new IllegalArgumentException("Product not found: " + productName);
         }
 
-        // Step 3: stock jothesto kina
+        // Step 3: enough stock or not
         if (product.getStockQuantity() < quantity) {
             throw new IllegalArgumentException("Not enough stock for " + product.getName()
                     + ". Available: " + product.getStockQuantity()
                     + ", requested: " + quantity);
         }
 
-        // Step 4: hishab
+        // Step 4: calculation
         double unitPrice = product.getPrice();
         double subtotal = roundMoney(unitPrice * quantity);
         double discountRate = getDiscountRate(subtotal);
         double finalTotal = roundMoney(subtotal - (subtotal * discountRate));
 
-        // Step 5: shob check pass korle tokhon stock komao
+        // Step 5: stock quantity
         product.setStockQuantity(product.getStockQuantity() - quantity);
 
         // Step 6: result return
         return new OrderSummary(product.getName(), quantity, unitPrice, discountRate, finalTotal);
     }
 
-    // Subtotal dekhe discount rate thik kore
+    // Discount Rate
     private double getDiscountRate(double subtotal) {
         if (subtotal >= 500) {
             return 0.15;
@@ -117,7 +115,7 @@ public class StoreInventory {
         }
     }
 
-    // Taka 2 doshomik ghor e round kore
+    // 2 decimal amount
     private double roundMoney(double amount) {
         return Math.round(amount * 100.0) / 100.0;
     }

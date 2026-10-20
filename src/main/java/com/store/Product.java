@@ -2,13 +2,13 @@ package com.store;
 
 public class Product {
 
-    // 1. Fields (private = baire theke dhora jabe na)
+    // 1. Fields
     private String name;
     private String category;
     private double price;
     private int stockQuantity;
 
-    // 2. Constructor (object banar somoy eta chole)
+    // 2. Constructor
     public Product(String name, String category, double price, int stockQuantity) {
         this.name = name;
         this.category = category;
@@ -16,7 +16,7 @@ public class Product {
         setStockQuantity(stockQuantity);
     }
 
-    // 3. Getters (value dekhar jonno)
+    // 3. Getters
     public String getName() {
         return name;
     }
@@ -33,7 +33,7 @@ public class Product {
         return stockQuantity;
     }
 
-    // 4. Setters (value change korar jonno, validation shoho)
+    // 4. Setters
     public void setPrice(double price) {
         if (price <= 0) {
             throw new IllegalArgumentException("Price must be greater than 0");
@@ -48,7 +48,7 @@ public class Product {
         this.stockQuantity = stockQuantity;
     }
 
-    // 5. toString (print korle sundor dekhabe)
+    // 5. toString
     @Override
     public String toString() {
         return String.format("%s (%s) - $%.2f | Stock: %d",
