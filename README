@@ -1,0 +1,17 @@
+# Store Inventory & Order Management System
+
+A small Java application demonstrating OOP, encapsulation, collections and JSON file persistence.
+
+## Features
+- `Product` with validated price (> 0) and stock (>= 0)
+- `StoreInventory`: add, remove (case-insensitive), search by category, list
+- `createOrder` with tiered discounts (0%, 5%, 10%, 15%)
+- Save and load inventory as JSON (Gson)
+
+## Requirements
+- JDK 21
+- Maven
+
+## How to run
+Open the project in IntelliJ IDEA and run `Main.java`
+(or `mvn compile exec:java` if exec plugin is configured).
