@@ -68,4 +68,58 @@ public class StoreInventory {
     public List<Product> getProducts() {
         return new ArrayList<>(products);
     }
+
+    // ===== ORDER PROCESSING =====
+
+    public OrderSummary createOrder(String productName, int quantity) {
+
+        // Step 1: input check
+        if (quantity <= 0) {
+            throw new IllegalArgumentException("Quantity must be greater than 0");
+        }
+
+        // Step 2: product ache kina
+        Product product = findProduct(productName);
+        if (product == null) {
+            throw new IllegalArgumentException("Product not found: " + productName);
+        }
+
+        // Step 3: stock jothesto kina
+        if (product.getStockQuantity() < quantity) {
+            throw new IllegalArgumentException("Not enough stock for " + product.getName()
+                    + ". Available: " + product.getStockQuantity()
+                    + ", requested: " + quantity);
+        }
+
+        // Step 4: hishab
+        double unitPrice = product.getPrice();
+        double subtotal = roundMoney(unitPrice * quantity);
+        double discountRate = getDiscountRate(subtotal);
+        double finalTotal = roundMoney(subtotal - (subtotal * discountRate));
+
+        // Step 5: shob check pass korle tokhon stock komao
+        product.setStockQuantity(product.getStockQuantity() - quantity);
+
+        // Step 6: result return
+        return new OrderSummary(product.getName(), quantity, unitPrice, discountRate, finalTotal);
+    }
+
+    // Subtotal dekhe discount rate thik kore
+    private double getDiscountRate(double subtotal) {
+        if (subtotal >= 500) {
+            return 0.15;
+        } else if (subtotal >= 200) {
+            return 0.10;
+        } else if (subtotal >= 100) {
+            return 0.05;
+        } else {
+            return 0.0;
+        }
+    }
+
+    // Taka 2 doshomik ghor e round kore
+    private double roundMoney(double amount) {
+        return Math.round(amount * 100.0) / 100.0;
+    }
+
 }
