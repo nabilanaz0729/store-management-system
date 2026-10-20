@@ -1,116 +1,123 @@
-/*
 package com.store;
 
-public class Main {
-    public static void main(String[] args) {
-
-        // Test 1: thik product
-        Product laptop = new Product("Laptop", "Electronics", 999.99, 5);
-        System.out.println(laptop);
-
-        // Test 2: invalid price
-        try {
-            Product bad = new Product("Pen", "Stationery", -5, 10);
-        } catch (IllegalArgumentException e) {
-            System.out.println("Error: " + e.getMessage());
-        }
-
-        // Test 3: invalid stock
-        try {
-            laptop.setStockQuantity(-1);
-        } catch (IllegalArgumentException e) {
-            System.out.println("Error: " + e.getMessage());
-        }
-    }
-}
-
-
-
---------------------------
-
-package com.store;
-
+import java.io.IOException;
 import java.util.List;
 
 public class Main {
+
     public static void main(String[] args) {
 
-        // ----- Product validation test -----
+        StoreInventory inventory = new StoreInventory();
+
+        // ================= 1. ADD PRODUCTS =================
+        printHeader("1. Adding products");
+        inventory.addProduct(new Product("Laptop", "Electronics", 999.99, 5));
+        inventory.addProduct(new Product("Mouse", "Electronics", 25.50, 40));
+        inventory.addProduct(new Product("Headphones", "Electronics", 59.99, 15));
+        inventory.addProduct(new Product("Notebook", "Stationery", 3.75, 100));
+        inventory.addProduct(new Product("Pen", "Stationery", 1.20, 500));
+        inventory.listInventory();
+
+        // ================= 2. VALIDATION EDGE CASES =================
+        printHeader("2. Validation edge cases");
+
         try {
-            new Product("Pen", "Stationery", -5, 10);
+            new Product("Bad", "Test", -5, 10);
         } catch (IllegalArgumentException e) {
+            System.out.println("Negative price  -> " + e.getMessage());
+        }
+
+        try {
+            new Product("Bad", "Test", 0, 10);
+        } catch (IllegalArgumentException e) {
+            System.out.println("Zero price      -> " + e.getMessage());
+        }
+
+        try {
+            new Product("Bad", "Test", 10, -3);
+        } catch (IllegalArgumentException e) {
+            System.out.println("Negative stock  -> " + e.getMessage());
+        }
+
+        try {
+            inventory.findProduct("Laptop").setPrice(0);
+        } catch (IllegalArgumentException e) {
+            System.out.println("Setter with 0   -> " + e.getMessage());
+        }
+
+        try {
+            inventory.addProduct(null);
+        } catch (IllegalArgumentException e) {
+            System.out.println("Null product    -> " + e.getMessage());
+        }
+
+        // ================= 3. SEARCH AND REMOVE =================
+        printHeader("3. Search and remove");
+
+        List<Product> electronics = inventory.searchByCategory("electronics");
+        System.out.println("Electronics found: " + electronics.size());
+        for (Product p : electronics) {
+            System.out.println("  " + p);
+        }
+
+        System.out.println("Remove 'PEN' (case-insensitive): " + inventory.removeProduct("PEN"));
+        System.out.println("Remove 'Tablet' (not in store): " + inventory.removeProduct("Tablet"));
+
+        // ================= 4. ORDERS WITH DISCOUNTS =================
+        printHeader("4. Orders with discounts");
+
+        placeOrder(inventory, "Notebook", 10);     // 37.50   -> 0%
+        placeOrder(inventory, "Headphones", 2);    // 119.98  -> 5%
+        placeOrder(inventory, "Mouse", 10);        // 255.00  -> 10%
+        placeOrder(inventory, "Laptop", 1);        // 999.99  -> 15%
+
+        // Invalid orders
+        placeOrder(inventory, "Laptop", 50);       // stock kom
+        placeOrder(inventory, "Tablet", 1);        // product nai
+        placeOrder(inventory, "Mouse", 0);         // quantity 0
+
+        inventory.listInventory();
+
+        // ================= 5. SAVE TO FILE =================
+        printHeader("5. Saving to file");
+        String filePath = "inventory.json";
+
+        try {
+            InventoryStorage.saveInventoryToFile(inventory, filePath);
+            System.out.println("Inventory saved to " + filePath);
+
+            // ================= 6. LOAD AND VERIFY =================
+            printHeader("6. Restoring from file");
+            StoreInventory restored = InventoryStorage.loadInventoryFromFile(filePath);
+            restored.listInventory();
+
+            boolean sameData = inventory.getProducts().size() == restored.getProducts().size();
+            boolean distinct = true;
+
+            for (Product original : inventory.getProducts()) {
+                Product copy = restored.findProduct(original.getName());
+                if (copy == null || !original.toString().equals(copy.toString())) {
+                    sameData = false;
+                }
+                if (copy == original) {
+                    distinct = false;
+                }
+            }
+            System.out.println("Restored data matches original: " + sameData);
+            System.out.println("Restored objects are distinct from original: " + distinct);
+
+        } catch (IOException | IllegalArgumentException e) {
             System.out.println("Error: " + e.getMessage());
         }
 
-        // ----- Inventory test -----
-        StoreInventory inventory = new StoreInventory();
-
-        // Empty inventory
-        inventory.listInventory();
-
-        // Product add
-        inventory.addProduct(new Product("Laptop", "Electronics", 999.99, 5));
-        inventory.addProduct(new Product("Mouse", "Electronics", 25.50, 40));
-        inventory.addProduct(new Product("Notebook", "Stationery", 3.75, 100));
-        inventory.listInventory();
-
-        // Category search
-        System.out.println("\nElectronics products:");
-        List<Product> electronics = inventory.searchByCategory("electronics");
-        for (Product p : electronics) {
-            System.out.println(" - " + p);
+        // ================= 7. MISSING FILE =================
+        printHeader("7. Loading a missing file");
+        try {
+            InventoryStorage.loadInventoryFromFile("missing.json");
+        } catch (IOException e) {
+            System.out.println("Error loading file: " + e.getClass().getSimpleName()
+                    + " - " + e.getMessage());
         }
-
-        // Remove (boro-chhoto hater ghoti nai)
-        boolean removed = inventory.removeProduct("MOUSE");
-        System.out.println("\nMouse removed? " + removed);
-
-        // Je product nai seta remove kora
-        boolean removedAgain = inventory.removeProduct("Keyboard");
-        System.out.println("Keyboard removed? " + removedAgain);
-
-        inventory.listInventory();
-    }
-}
-package com.store;
-
-public class Main {
-
-    public static void main(String[] args) {
-
-        StoreInventory inventory = new StoreInventory();
-
-        // ----- Boundary test er product (price = subtotal boundary) -----
-        inventory.addProduct(new Product("Tier-A", "Test", 99.99, 10));
-        inventory.addProduct(new Product("Tier-B", "Test", 100.00, 10));
-        inventory.addProduct(new Product("Tier-C", "Test", 199.99, 10));
-        inventory.addProduct(new Product("Tier-D", "Test", 200.00, 10));
-        inventory.addProduct(new Product("Tier-E", "Test", 499.99, 10));
-        inventory.addProduct(new Product("Tier-F", "Test", 500.00, 10));
-
-        // ----- Normal product -----
-        inventory.addProduct(new Product("Mouse", "Electronics", 25.50, 40));
-        inventory.addProduct(new Product("Laptop", "Electronics", 999.99, 5));
-
-        System.out.println("--- Boundary tests (quantity 1) ---");
-        placeOrder(inventory, "Tier-A", 1);   // 99.99  -> 0%
-        placeOrder(inventory, "Tier-B", 1);   // 100.00 -> 5%
-        placeOrder(inventory, "Tier-C", 1);   // 199.99 -> 5%
-        placeOrder(inventory, "Tier-D", 1);   // 200.00 -> 10%
-        placeOrder(inventory, "Tier-E", 1);   // 499.99 -> 10%
-        placeOrder(inventory, "Tier-F", 1);   // 500.00 -> 15%
-
-        System.out.println("\n--- Quantity diye order ---");
-        placeOrder(inventory, "Mouse", 10);   // 255.00 -> 10%
-        placeOrder(inventory, "laptop", 2);   // case-insensitive, 1999.98 -> 15%
-
-        System.out.println("\n--- Invalid order ---");
-        placeOrder(inventory, "Laptop", 10);    // stock kom
-        placeOrder(inventory, "Keyboard", 1);   // product nai
-        placeOrder(inventory, "Mouse", 0);      // quantity 0
-
-        System.out.println();
-        inventory.listInventory();
     }
 
     // Order dey, result print kore. Error hole message dekhay
@@ -122,57 +129,8 @@ public class Main {
             System.out.println("Error: " + e.getMessage());
         }
     }
-*/
 
-
-package com.store;
-
-import java.io.IOException;
-
-public class Main {
-
-    public static void main(String[] args) {
-
-        // Inventory banai
-        StoreInventory inventory = new StoreInventory();
-        inventory.addProduct(new Product("Laptop", "Electronics", 999.99, 5));
-        inventory.addProduct(new Product("Mouse", "Electronics", 25.50, 40));
-        inventory.addProduct(new Product("Notebook", "Stationery", 3.75, 100));
-
-        // Ekta order dei, jate stock bodlay
-        inventory.createOrder("Mouse", 10);
-
-        System.out.println("--- Before saving ---");
-        inventory.listInventory();
-
-        String filePath = "inventory.json";
-
-        try {
-            // SAVE
-            InventoryStorage.saveInventoryToFile(inventory, filePath);
-            System.out.println("Saved to " + filePath);
-
-            // LOAD
-            StoreInventory loaded = InventoryStorage.loadInventoryFromFile(filePath);
-            System.out.println("\n--- After loading ---");
-            loaded.listInventory();
-
-            // Proof: loaded ta alada object
-            System.out.println("\nSame inventory object? " + (inventory == loaded));
-
-            // Loaded copy te order dei, original e effect porbe na
-            System.out.println("Order on loaded copy: " + loaded.createOrder("Laptop", 1));
-            System.out.println("Laptop stock in original: "
-                    + inventory.findProduct("Laptop").getStockQuantity());
-            System.out.println("Laptop stock in loaded: "
-                    + loaded.findProduct("Laptop").getStockQuantity());
-
-            // Loaded product e validation ekhono kaj kore kina
-            loaded.findProduct("Laptop").setStockQuantity(-1);
-
-        } catch (IOException | IllegalArgumentException e) {
-            System.out.println("Error: " + e.getMessage());
-        }
+    private static void printHeader(String title) {
+        System.out.println("\n>>> " + title);
     }
 }
-
